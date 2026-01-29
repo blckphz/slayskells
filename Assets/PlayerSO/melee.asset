@@ -15,7 +15,7 @@ MonoBehaviour:
   fireRate: 3.4
   prefab: {fileID: 233725004081931323, guid: 49947f31aaae6ec46b59d342ab70058a, type: 3}
   damage: 20
-  spawnOffset: 1
+  spawnOffset: 5
   rotationOffset: 90
   swingsPerAttack: 2
-  delayBetweenSwings: 0.95
+  delayBetweenSwings: 0.55
