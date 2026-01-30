@@ -5,14 +5,19 @@ using System.Collections.Generic;
 public class meleebehav : MonoBehaviour
 {
     private float damage;
-    private List<GameObject> hitEnemies = new List<GameObject>();
+    private List<IDamageable> hitEnemies = new List<IDamageable>();
     private Animator anim;
     private Vector3 prefabScale;
+
+    private Transform spriteTransform;
+    private Coroutine deactivationRoutine;
 
     private void Awake()
     {
         anim = GetComponent<Animator>();
         prefabScale = transform.localScale;
+
+        spriteTransform = GetComponentInChildren<SpriteRenderer>()?.transform;
     }
 
     public void Setup(float dmg, int swingIndex)
@@ -21,7 +26,7 @@ public class meleebehav : MonoBehaviour
         hitEnemies.Clear();
         StopAllCoroutines();
 
-        // Flip every second swing for variety
+        // Flip every second swing for visual variety
         bool isEven = (swingIndex % 2 == 0);
         transform.localScale = new Vector3(
             isEven ? -prefabScale.x : prefabScale.x,
@@ -37,7 +42,9 @@ public class meleebehav : MonoBehaviour
         }
         else
         {
-            Invoke(nameof(Deactivate), 0.3f);
+            // fallback if no animator
+            if (deactivationRoutine != null) StopCoroutine(deactivationRoutine);
+            deactivationRoutine = StartCoroutine(DeactivateAfterTime(0.3f));
         }
     }
 
@@ -54,17 +61,23 @@ public class meleebehav : MonoBehaviour
         Deactivate();
     }
 
+    private IEnumerator DeactivateAfterTime(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Deactivate();
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Enemy") && !hitEnemies.Contains(collision.gameObject))
+        IDamageable target = collision.GetComponent<IDamageable>();
+        if (target != null && !hitEnemies.Contains(target))
         {
-            hitEnemies.Add(collision.gameObject);
+            // Apply damage
+            target.TakeDamage(damage);
+            hitEnemies.Add(target);
 
-            // Apply damage logic
-            Debug.Log($"Hit {collision.name} for {damage} damage!");
-
-            // Optional: shake camera per enemy hit instead of per swing
-            // CameraShaker.Shake(0.35f, 0.12f);
+            // Camera shake per enemy hit
+            CameraShaker.Shake(0.35f, 0.12f);
         }
     }
 

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI; // Required for Slider
+using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -16,9 +17,17 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("UI Components")]
     public Slider staminaSlider;
-    public Image fillImage; // The "Fill" part of the slider
+    public Image fillImage;      // The "Fill" part of the slider
+    public Image backgroundImage; // Optional background image to shake together
     public Color normalColor = Color.yellow;
     public Color exhaustedColor = Color.red;
+
+    [Header("Shake Settings")]
+    public float shakeDuration = 0.3f;
+    public float shakeMagnitude = 5f;
+
+    private Vector2 fillOriginalPos;
+    private Vector2 bgOriginalPos;
 
     private Vector2 moveInput;
     private bool isDashButtonHeld;
@@ -29,12 +38,17 @@ public class PlayerMovement : MonoBehaviour
     {
         currentStamina = maxStamina;
 
-        // Initialize UI
         if (staminaSlider != null)
         {
             staminaSlider.maxValue = maxStamina;
             staminaSlider.value = maxStamina;
         }
+
+        if (fillImage != null)
+            fillOriginalPos = fillImage.rectTransform.anchoredPosition;
+
+        if (backgroundImage != null)
+            bgOriginalPos = backgroundImage.rectTransform.anchoredPosition;
     }
 
     void OnMove(InputValue value) => moveInput = value.Get<Vector2>();
@@ -42,15 +56,12 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        // Update UI every frame for smoothness
+        // Update UI
         if (staminaSlider != null)
-        {
             staminaSlider.value = currentStamina;
 
-            // Change color if exhausted
-            if (fillImage != null)
-                fillImage.color = isExhausted ? exhaustedColor : normalColor;
-        }
+        if (fillImage != null)
+            fillImage.color = isExhausted ? exhaustedColor : normalColor;
     }
 
     void FixedUpdate()
@@ -74,8 +85,14 @@ public class PlayerMovement : MonoBehaviour
             if (currentStamina <= 0)
             {
                 currentStamina = 0;
-                isExhausted = true;
-                Invoke(nameof(ResetExhaustion), emptyPenaltyTime);
+                if (!isExhausted)
+                {
+                    isExhausted = true;
+                    Invoke(nameof(ResetExhaustion), emptyPenaltyTime);
+
+                    // Shake UI when stamina is depleted
+                    StartCoroutine(ShakeStaminaUI());
+                }
             }
         }
         else
@@ -85,7 +102,6 @@ public class PlayerMovement : MonoBehaviour
 
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
 
-            // Recover from exhaustion at 20%
             if (isExhausted && currentStamina >= (maxStamina * 0.2f))
                 isExhausted = false;
         }
@@ -93,6 +109,31 @@ public class PlayerMovement : MonoBehaviour
 
     private void ResetExhaustion()
     {
-        // This ensures they can't dash again until the 20% check is also met
+        // Empty penalty has ended; stamina recovery logic handles reset
+    }
+
+    // --- Shake Coroutine ---
+    private IEnumerator ShakeStaminaUI()
+    {
+        float timer = 0f;
+
+        while (timer < shakeDuration)
+        {
+            timer += Time.deltaTime;
+            Vector2 offset = Random.insideUnitCircle * shakeMagnitude;
+
+            if (fillImage != null)
+                fillImage.rectTransform.anchoredPosition = fillOriginalPos + offset;
+            if (backgroundImage != null)
+                backgroundImage.rectTransform.anchoredPosition = bgOriginalPos + offset;
+
+            yield return null;
+        }
+
+        // Reset to original positions
+        if (fillImage != null)
+            fillImage.rectTransform.anchoredPosition = fillOriginalPos;
+        if (backgroundImage != null)
+            backgroundImage.rectTransform.anchoredPosition = bgOriginalPos;
     }
 }
