@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 
-[CreateAssetMenu(fileName = "NewMeleeAbility", menuName = "Abilities/Melee")]
 public class offensivemelee : offensiveability
 {
     [Header("Placement Settings")]
@@ -24,6 +23,12 @@ public class offensivemelee : offensiveability
         {
             if (caster == null) yield break;
 
+            // Play sound for every individual swing
+            if (launchsound != null)
+            {
+                audiomanager.Instance?.PlaySound(launchsound);
+            }
+
             PerformSingleSwing(caster, targetAnchor, i + 1);
 
             if (i < swingsPerAttack - 1)
@@ -35,30 +40,22 @@ public class offensivemelee : offensiveability
     {
         if (prefab == null) return;
 
-        // 1. Calculate direction (snap to cardinal)
         Vector2 rawDir = (targetAnchor.position - caster.position).normalized;
         Vector2 snappedDir = Mathf.Abs(rawDir.x) > Mathf.Abs(rawDir.y)
             ? new Vector2(Mathf.Sign(rawDir.x), 0)
             : new Vector2(0, Mathf.Sign(rawDir.y));
 
-        // 2. Calculate rotation
         float angle = (Mathf.Atan2(snappedDir.y, snappedDir.x) * Mathf.Rad2Deg) + rotationOffset;
 
-        // 3. Spawn from pool
         GameObject woosh = ObjectPooler.Instance.GetPooledObject(prefab, caster.position, Quaternion.Euler(0, 0, angle));
 
-        // 4. Parenting & offset
         woosh.transform.SetParent(caster);
         woosh.transform.localPosition = (Vector3)(snappedDir * spawnOffset);
 
-        // 5. Setup melee behavior
         var behav = woosh.GetComponent<meleebehav>();
         if (behav != null)
             behav.Setup(damage, index);
 
-        // 6. Camera shake per swing
         CameraShaker.Shake(0.4f, 0.12f);
-
-        Debug.DrawRay(caster.position, (Vector3)snappedDir * spawnOffset, Color.magenta, 0.4f);
     }
 }

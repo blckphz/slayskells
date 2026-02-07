@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI; // Required for Slider
+using UnityEngine.UI;
 using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
@@ -13,12 +13,14 @@ public class PlayerMovement : MonoBehaviour
     [Header("Stamina Settings")]
     public float maxStamina = 1.5f;
     public float rechargeRate = 0.5f;
+    // New variable to control how fast stamina drains
+    public float consumptionRate = 1.0f;
     public float emptyPenaltyTime = 1f;
 
     [Header("UI Components")]
     public Slider staminaSlider;
-    public Image fillImage;      // The "Fill" part of the slider
-    public Image backgroundImage; // Optional background image to shake together
+    public Image fillImage;
+    public Image backgroundImage;
     public Color normalColor = Color.yellow;
     public Color exhaustedColor = Color.red;
 
@@ -28,7 +30,6 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector2 fillOriginalPos;
     private Vector2 bgOriginalPos;
-
     private Vector2 moveInput;
     private bool isDashButtonHeld;
     private float currentStamina;
@@ -56,7 +57,6 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        // Update UI
         if (staminaSlider != null)
             staminaSlider.value = currentStamina;
 
@@ -81,7 +81,9 @@ public class PlayerMovement : MonoBehaviour
 
         if (isDashButtonHeld && isMoving && !isExhausted)
         {
-            currentStamina -= Time.fixedDeltaTime;
+            // Apply the consumption rate here
+            currentStamina -= consumptionRate * Time.fixedDeltaTime;
+
             if (currentStamina <= 0)
             {
                 currentStamina = 0;
@@ -89,8 +91,6 @@ public class PlayerMovement : MonoBehaviour
                 {
                     isExhausted = true;
                     Invoke(nameof(ResetExhaustion), emptyPenaltyTime);
-
-                    // Shake UI when stamina is depleted
                     StartCoroutine(ShakeStaminaUI());
                 }
             }
@@ -107,16 +107,11 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void ResetExhaustion()
-    {
-        // Empty penalty has ended; stamina recovery logic handles reset
-    }
+    private void ResetExhaustion() { /* Penalty logic */ }
 
-    // --- Shake Coroutine ---
     private IEnumerator ShakeStaminaUI()
     {
         float timer = 0f;
-
         while (timer < shakeDuration)
         {
             timer += Time.deltaTime;
@@ -130,10 +125,7 @@ public class PlayerMovement : MonoBehaviour
             yield return null;
         }
 
-        // Reset to original positions
-        if (fillImage != null)
-            fillImage.rectTransform.anchoredPosition = fillOriginalPos;
-        if (backgroundImage != null)
-            backgroundImage.rectTransform.anchoredPosition = bgOriginalPos;
+        if (fillImage != null) fillImage.rectTransform.anchoredPosition = fillOriginalPos;
+        if (backgroundImage != null) backgroundImage.rectTransform.anchoredPosition = bgOriginalPos;
     }
 }

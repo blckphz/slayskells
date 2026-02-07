@@ -1,5 +1,6 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Windows;
 
 public class PlayerAttack : MonoBehaviour
 {
@@ -11,50 +12,71 @@ public class PlayerAttack : MonoBehaviour
     [Tooltip("Default shake if the ability doesn't have a value")]
     [SerializeField] private float defaultShakeIntensity = 0.5f;
 
-    // Track cooldowns per ability
-    public Dictionary<Ability, float> abilityCooldowns = new Dictionary<Ability, float>();
+    // Track cooldowns per ability
+    public Dictionary<Ability, float> abilityCooldowns = new Dictionary<Ability, float>();
 
     void Update()
     {
-        if (currentChar == null || currentChar.abilities == null || currentChar.abilities.Length == 0)
+        // Safety check to ensure we have a character and abilities assigned
+        if (currentChar == null || currentChar.abilities == null || currentChar.abilities.Length == 0)
             return;
 
-        // Fire1 (Primary)
-        Ability primary = currentChar.abilities[0];
-        if (primary != null && Input.GetButton("Fire1") && CanUseAbility(primary))
+        // --- Ability 1 (Left Click / Fire1) ---
+        Ability primary = currentChar.abilities[0];
+        if (primary != null && UnityEngine.Input.GetButton("Fire1") && CanUseAbility(primary))
         {
             PerformAttack(primary);
         }
 
-        // Fire2 (Secondary)
-        Ability secondary = currentChar.abilities.Length > 1 ? currentChar.abilities[1] : null;
-        if (secondary != null && Input.GetButton("Fire2") && CanUseAbility(secondary))
+        // --- Ability 2 (Right Click / Fire2) ---
+        if (currentChar.abilities.Length > 1)
         {
-            PerformAttack(secondary);
+            Ability secondary = currentChar.abilities[1];
+            if (secondary != null && UnityEngine.Input.GetButton("Fire2") && CanUseAbility(secondary))
+            {
+                PerformAttack(secondary);
+            }
+        }
+
+        // --- Ability 3 (Middle Click / Fire3) ---
+        if (currentChar.abilities.Length > 2)
+        {
+            Ability special = currentChar.abilities[2];
+            if (special != null && UnityEngine.Input.GetButton("Fire4") && CanUseAbility(special))
+            {
+                PerformAttack(special);
+            }
         }
     }
 
     private bool CanUseAbility(Ability ability)
     {
-        if (!abilityCooldowns.ContainsKey(ability))
+        // Initialize the cooldown entry if it doesn't exist yet
+        if (!abilityCooldowns.ContainsKey(ability))
             abilityCooldowns[ability] = 0f;
 
-        return Time.time >= abilityCooldowns[ability];
+        // Check if the current time has passed the stored cooldown timestamp
+        return Time.time >= abilityCooldowns[ability];
     }
 
     private void PerformAttack(Ability ability)
     {
         if (ability == null) return;
 
-        Debug.Log($"<color=white><b>[Input] {ability.name} Fired</b></color>");
+        // 1. Play the launch sound via the AudioManager
+        if (ability.launchsound != null && audiomanager.Instance != null)
+        {
+            audiomanager.Instance.PlaySound(ability.launchsound);
+        }
 
-        // Execute the ability
-        ability.Execute(transform, anchor);
+        // 2. Execute the ability logic (passes the player's transform and the aim anchor)
+        ability.Execute(transform, anchor);
 
-        // Set cooldown independently
-        abilityCooldowns[ability] = Time.time + ability.fireRate;
+        // 3. Set the next available time this ability can be used
+        abilityCooldowns[ability] = Time.time + ability.fireRate;
 
-        // Trigger UI shake via static charsetter
-        charsetter.Instance?.TriggerAbilityUsed(ability);
+        // 4. Trigger UI effects (Cooldown overlays, icon bounces, etc.)
+        charsetter.Instance?.TriggerAbilityUsed(ability);
     }
 }
+
