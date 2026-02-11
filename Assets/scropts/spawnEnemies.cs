@@ -34,7 +34,7 @@ public class EnemySpawner : MonoBehaviour
     {
         // Choose a random side: 0=Left, 1=Right, 2=Bottom, 3=Top
         int side = Random.Range(0, 4);
-        Vector3 viewportPoint = Vector3.zero;
+        Vector2 viewportPoint = Vector2.zero;
 
         switch (side)
         {

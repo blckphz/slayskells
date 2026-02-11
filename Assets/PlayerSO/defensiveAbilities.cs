@@ -1,17 +1,11 @@
 using UnityEngine;
 
-public class defensiveAbilities : MonoBehaviour
+public class defensiveAbilities : Ability
 {
     public float hp;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
+    public override void Execute(Transform caster, Transform targetAnchor)
     {
         
     }

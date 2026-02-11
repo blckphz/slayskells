@@ -7,6 +7,12 @@ public class ChainLightning : offensiveRanged
     public int maxBounces = 3;
     public float bounceRadius = 5f;
 
+    [Header("Stun Settings")]
+    public float stunDuration = 5f;
+    public float stundmg = 5f;
+    public float stuntick = 5f;
+
+
     [Tooltip("Degrees to rotate sprite so it visually faces movement")]
     public float rotationOffset = 0f;
 

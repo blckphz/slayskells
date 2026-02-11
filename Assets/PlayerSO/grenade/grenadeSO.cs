@@ -1,4 +1,3 @@
-using UnityEditor.Playables;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "New 2D Grenade", menuName = "Abilities/2D Grenade")]

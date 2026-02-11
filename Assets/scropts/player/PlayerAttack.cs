@@ -1,82 +1,110 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Windows;
 
 public class PlayerAttack : MonoBehaviour
 {
     [Header("References")]
     public charSO currentChar;
-    public Transform anchor;
 
     [Header("Settings")]
-    [Tooltip("Default shake if the ability doesn't have a value")]
     [SerializeField] private float defaultShakeIntensity = 0.5f;
 
-    // Track cooldowns per ability
-    public Dictionary<Ability, float> abilityCooldowns = new Dictionary<Ability, float>();
+    // Internal tracker for cooldowns
+    public Dictionary<Ability, float> abilityCooldowns = new Dictionary<Ability, float>();
+
+    // LIVE ANCHOR PROPERTY: Always gets the current position of the anchor from PlayerAim
+    public Transform CurrentAnchor
+    {
+        get
+        {
+            PlayerAim aim = GameObject.FindObjectOfType<PlayerAim>();
+            if (aim != null && aim.anchor != null)
+            {
+                return aim.anchor;
+            }
+            return null;
+        }
+    }
 
     void Update()
     {
-        // Safety check to ensure we have a character and abilities assigned
-        if (currentChar == null || currentChar.abilities == null || currentChar.abilities.Length == 0)
+        if (currentChar == null || currentChar.abilities == null || currentChar.abilities.Length == 0)
             return;
 
-        // --- Ability 1 (Left Click / Fire1) ---
-        Ability primary = currentChar.abilities[0];
-        if (primary != null && UnityEngine.Input.GetButton("Fire1") && CanUseAbility(primary))
+        // Ability 1 (Left Click)
+        if (Input.GetButton("Fire1"))
         {
-            PerformAttack(primary);
+            TryUseAbility(0);
         }
 
-        // --- Ability 2 (Right Click / Fire2) ---
-        if (currentChar.abilities.Length > 1)
+        // Ability 2 (Right Click)
+        if (currentChar.abilities.Length > 1 && Input.GetButton("Fire2"))
         {
-            Ability secondary = currentChar.abilities[1];
-            if (secondary != null && UnityEngine.Input.GetButton("Fire2") && CanUseAbility(secondary))
-            {
-                PerformAttack(secondary);
-            }
+            TryUseAbility(1);
         }
 
-        // --- Ability 3 (Middle Click / Fire3) ---
-        if (currentChar.abilities.Length > 2)
+        // Ability 3 (Middle Click / Fire4)
+        if (currentChar.abilities.Length > 2 && Input.GetButton("Fire4"))
         {
-            Ability special = currentChar.abilities[2];
-            if (special != null && UnityEngine.Input.GetButton("Fire4") && CanUseAbility(special))
-            {
-                PerformAttack(special);
-            }
+            TryUseAbility(2);
+        }
+    }
+
+    private void TryUseAbility(int index)
+    {
+        Ability ability = currentChar.abilities[index];
+        if (ability != null && CanUseAbility(ability))
+        {
+            PerformAttack(ability);
         }
     }
 
     private bool CanUseAbility(Ability ability)
     {
-        // Initialize the cooldown entry if it doesn't exist yet
-        if (!abilityCooldowns.ContainsKey(ability))
+        if (!abilityCooldowns.ContainsKey(ability))
             abilityCooldowns[ability] = 0f;
 
-        // Check if the current time has passed the stored cooldown timestamp
-        return Time.time >= abilityCooldowns[ability];
+        bool ready = Time.time >= abilityCooldowns[ability];
+
+        // Uncomment the line below if you want to see cooldown status in console
+        // if (!ready) Debug.Log($"[PlayerAttack] {ability.name} on cooldown for {abilityCooldowns[ability] - Time.time:F2}s");
+
+        return ready;
     }
 
     private void PerformAttack(Ability ability)
     {
-        if (ability == null) return;
+        Transform activeAnchor = CurrentAnchor;
 
-        // 1. Play the launch sound via the AudioManager
-        if (ability.launchsound != null && audiomanager.Instance != null)
+        // Safety check for the anchor
+        if (activeAnchor == null)
+        {
+            Debug.LogError($"[PlayerAttack] Cannot attack! No Anchor found on the PlayerAim script of {gameObject.name}");
+            return;
+        }
+
+        Debug.Log($"[PlayerAttack] Executing {ability.name} at Position: {activeAnchor.position}");
+
+        // 1. Audio
+        if (ability.launchsound != null && audiomanager.Instance != null)
         {
             audiomanager.Instance.PlaySound(ability.launchsound);
         }
 
-        // 2. Execute the ability logic (passes the player's transform and the aim anchor)
-        ability.Execute(transform, anchor);
+        // 2. Logic - Uses the LIVE position of the anchor
+        ability.Execute(transform, activeAnchor);
 
-        // 3. Set the next available time this ability can be used
-        abilityCooldowns[ability] = Time.time + ability.fireRate;
+        // 3. Set Cooldown
+        abilityCooldowns[ability] = Time.time + ability.fireRate;
 
-        // 4. Trigger UI effects (Cooldown overlays, icon bounces, etc.)
-        charsetter.Instance?.TriggerAbilityUsed(ability);
+        // 4. UI Trigger
+        if (charsetter.Instance != null)
+        {
+            charsetter.Instance.TriggerAbilityUsed(ability);
+        }
+        else
+        {
+            Debug.LogWarning("[PlayerAttack] charsetter.Instance is missing! UI won't update.");
+        }
     }
 }
-

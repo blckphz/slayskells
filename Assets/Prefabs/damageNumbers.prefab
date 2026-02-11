@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4023393707413112603}
   - component: {fileID: 4571014574996309469}
   m_Layer: 0
-  m_Name: GameObject (2)
+  m_Name: damageNumbers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -76,6 +76,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DamageNumber
   moveSpeed: 2
   lifeTime: 1
+  spreadRange: 3
 --- !u!50 &4571014574996309469
 Rigidbody2D:
   serializedVersion: 5
