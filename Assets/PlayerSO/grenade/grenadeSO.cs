@@ -8,25 +8,27 @@ public class grenadeSO : offensiveRanged
 
     public override void Execute(Transform caster, Transform targetAnchor)
     {
-        // 1. Spawn the grenade
+        Debug.Log("[GrenadeSO] Executing grenade...");
+
+        // Spawn grenade prefab at caster position
         GameObject grenade = Instantiate(prefab, caster.position, Quaternion.identity);
 
-        // 2. Calculate 2D Direction
+        // Calculate 2D throw direction
         Vector2 throwDir = (targetAnchor.position - caster.position).normalized;
 
-        // 3. Apply 2D Physics
+        // Apply physics
         Rigidbody2D rb = grenade.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
             rb.AddForce(throwDir * throwForce, ForceMode2D.Impulse);
-            // Add a little bit of torque for a nice spin effect
-            //rb.AddTorque(5f, ForceMode2D.Impulse);
+            Debug.Log($"[GrenadeSO] Thrown with force {throwForce}");
         }
 
-        // 4. Pass the stats to the prefab's logic script
+        // Initialize grenade logic
         if (grenade.TryGetComponent(out grenadeBehav logic))
         {
-            logic.Initialize(damage, explosionRadius);
+            logic.Initialize(damage, explosionRadius, logic.fuseTime);
+            Debug.Log("[GrenadeSO] Grenade logic initialized");
         }
     }
 }

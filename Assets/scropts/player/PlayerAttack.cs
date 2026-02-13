@@ -48,13 +48,28 @@ public class PlayerAttack : MonoBehaviour
         {
             TryUseAbility(2);
         }
+
+        if (currentChar.abilities.Length > 2 && Input.GetButton("Fire5"))
+        {
+            TryUseAbility(3);
+        }
     }
 
     private void TryUseAbility(int index)
     {
+        Debug.Log($"Trying to use ability index {index}");
+
+        if (currentChar == null || currentChar.abilities == null)
+            return;
+
+        if (index >= currentChar.abilities.Length)
+            return;
+
         Ability ability = currentChar.abilities[index];
+
         if (ability != null && CanUseAbility(ability))
         {
+            Debug.Log($"Using ability: {ability.name}");
             PerformAttack(ability);
         }
     }

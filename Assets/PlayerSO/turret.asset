@@ -13,8 +13,11 @@ MonoBehaviour:
   m_Name: turret
   m_EditorClassIdentifier: Assembly-CSharp::turretSO
   fireRate: 0.2
-  prefab: {fileID: 0}
-  icon: {fileID: 0}
+  prefab: {fileID: 8753894595848831632, guid: 2d8a9fcc3ff41ae45a0d0df325f0147f, type: 3}
+  icon: {fileID: 2323917800338813707, guid: 859e98a146b6f3049b6e74c198e5b18a, type: 3}
   launchsound: {fileID: 0}
   customAudioLogic: 0
   hp: 0
+  lifetime: 10
+  turretdmg: 2
+  shootfreq: 0
