@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using Pathfinding;
 
 public class enemyHealth : MonoBehaviour, IDamageable
 {
@@ -9,26 +10,45 @@ public class enemyHealth : MonoBehaviour, IDamageable
     private float maxHealth;
 
     [Header("UI References")]
-    public GameObject healthBarObject; // Drag the Canvas or the HealthBar Parent here
-    public Image healthBarFill;       // Drag your Red 'Filled' Image here
+    public GameObject healthBarObject;
+    public Image healthBarFill;
     public GameObject damageTextPrefab;
 
     [Header("Visual Effects")]
-    public Renderer enemyRenderer;
     public float flashDuration = 0.2f;
-    private Material _material;
     private Coroutine _flashCoroutine;
+
+    [Header("Slow Settings")]
+    public Color slowColor = Color.yellow;
+
+    private Color originalColor;
+    private Coroutine slowCoroutine;
+
+    private AIPath ai;
+    private float originalSpeed;
+
+    private SpriteRenderer spriteRenderer;
 
     void Start()
     {
         maxHealth = health;
 
-        if (enemyRenderer != null)
-            _material = enemyRenderer.material;
+        // Get SpriteRenderer
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+            originalColor = spriteRenderer.color;
+
+        // Get A* AIPath
+        ai = GetComponent<AIPath>();
+        if (ai != null)
+            originalSpeed = ai.maxSpeed;
 
         UpdateHealthUI();
     }
 
+    // ======================
+    // DAMAGE
+    // ======================
     public void TakeDamage(float damage)
     {
         health -= damage;
@@ -37,54 +57,102 @@ public class enemyHealth : MonoBehaviour, IDamageable
         UpdateHealthUI();
         ShowDamageText(damage);
 
-        if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
+        if (_flashCoroutine != null)
+            StopCoroutine(_flashCoroutine);
+
         _flashCoroutine = StartCoroutine(FlashEffect());
 
-        if (health <= 0) Die();
+        if (health <= 0)
+            Die();
     }
 
-    void UpdateHealthUI()
+    // ======================
+    // APPLY SLOW
+    // ======================
+    public void ApplySlow(float slowPercent, float duration)
     {
-        // 1. Update the fill amount
-        if (healthBarFill != null)
-        {
-            healthBarFill.fillAmount = health / maxHealth;
-        }
+        if (ai == null) return;
 
-        // 2. Hide if full, Show if damaged
-        if (healthBarObject != null)
-        {
-            if (health >= maxHealth)
-                healthBarObject.SetActive(false);
-            else
-                healthBarObject.SetActive(true);
-        }
+        if (slowCoroutine != null)
+            StopCoroutine(slowCoroutine);
+
+        slowCoroutine = StartCoroutine(SlowRoutine(slowPercent, duration));
     }
 
+    IEnumerator SlowRoutine(float slowPercent, float duration)
+    {
+        // Apply speed reduction
+        ai.maxSpeed = originalSpeed * (1f - slowPercent);
+
+        // Apply yellow tint
+        if (spriteRenderer != null)
+            spriteRenderer.color = slowColor;
+
+        yield return new WaitForSeconds(duration);
+
+        // Restore speed
+        ai.maxSpeed = originalSpeed;
+
+        // Restore original color
+        if (spriteRenderer != null)
+            spriteRenderer.color = originalColor;
+    }
+
+    // ======================
+    // FLASH EFFECT (simple white flash)
+    // ======================
     IEnumerator FlashEffect()
     {
-        float elapsed = 0f;
-        while (elapsed < flashDuration)
-        {
-            elapsed += Time.deltaTime;
-            float intensity = Mathf.Lerp(1f, 0f, elapsed / flashDuration);
-            if (_material != null) _material.SetFloat("_Intensity", intensity);
-            yield return null;
-        }
-        if (_material != null) _material.SetFloat("_Intensity", 0f);
+        if (spriteRenderer == null)
+            yield break;
+
+        Color flashColor = Color.white;
+        spriteRenderer.color = flashColor;
+
+        yield return new WaitForSeconds(flashDuration);
+
+        // If still slowed, keep slow color
+        if (slowCoroutine != null)
+            spriteRenderer.color = slowColor;
+        else
+            spriteRenderer.color = originalColor;
     }
 
+    // ======================
+    // HEALTH UI
+    // ======================
+    void UpdateHealthUI()
+    {
+        if (healthBarFill != null)
+            healthBarFill.fillAmount = health / maxHealth;
+
+        if (healthBarObject != null)
+            healthBarObject.SetActive(health < maxHealth);
+    }
+
+    // ======================
+    // DAMAGE TEXT
+    // ======================
     void ShowDamageText(float damage)
     {
         if (damageTextPrefab != null)
         {
-            GameObject textObj = Instantiate(damageTextPrefab, transform.position + Vector3.up, Quaternion.identity);
+            GameObject textObj = Instantiate(
+                damageTextPrefab,
+                transform.position + Vector3.up,
+                Quaternion.identity
+            );
+
             if (textObj.TryGetComponent<DamageNumber>(out DamageNumber dn))
-            {
                 dn.Setup(damage);
-            }
         }
     }
 
-    void Die() => Destroy(gameObject);
+    // ======================
+    // DEATH
+    // ======================
+    void Die()
+    {
+        Destroy(gameObject);
+    }
 }

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class TurretBehaviour : MonoBehaviour
 {
@@ -17,6 +17,14 @@ public class TurretBehaviour : MonoBehaviour
     // Internal timer
     private float shootTimer = 0f;
     private bool isActive = false;
+
+    // ✅ ADDED
+    private Animator animator;
+
+    private void Awake()
+    {
+        animator = GetComponent<Animator>();
+    }
 
     // Setup turret when spawned
     public void Setup(float health, float life, Transform caster)
@@ -54,12 +62,19 @@ public class TurretBehaviour : MonoBehaviour
             enemyHealth target = FindNearestEnemy();
             if (target != null)
             {
+                // ✅ ADDED (face target using animator)
+                FaceTarget(target.transform);
+
                 Debug.Log($"[Turret] Target acquired: {target.name} at distance {Vector2.Distance(transform.position, target.transform.position):F2}");
                 Shoot(target.transform);
             }
             else
             {
                 Debug.Log("[Turret] No enemies in range.");
+
+                // Optional: reset direction when no enemy
+                animator.SetFloat("x", 0f);
+                animator.SetFloat("y", 0f);
             }
         }
     }
@@ -69,6 +84,15 @@ public class TurretBehaviour : MonoBehaviour
         isActive = false;
         gameObject.SetActive(false);
         Debug.Log("[Turret] Lifetime ended, turret deactivated.");
+    }
+
+    // ✅ ADDED METHOD
+    void FaceTarget(Transform target)
+    {
+        Vector2 dir = (target.position - transform.position).normalized;
+
+        animator.SetFloat("x", dir.x);
+        animator.SetFloat("y", dir.y);
     }
 
     // Find nearest enemy within detection radius
@@ -102,13 +126,9 @@ public class TurretBehaviour : MonoBehaviour
 
         Vector2 dir = (target.position - transform.position).normalized;
 
-        // Calculate angle in degrees
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-
-        // Since sprite points down, add 90 degrees
         Quaternion rotation = Quaternion.Euler(0f, 0f, angle + 90f);
 
-        // Instantiate projectile with rotation
         GameObject proj = Instantiate(projectilePrefab, transform.position, rotation);
 
         Rigidbody2D rb = proj.GetComponent<Rigidbody2D>();
@@ -125,5 +145,4 @@ public class TurretBehaviour : MonoBehaviour
 
         Debug.Log($"[Turret] Shot fired at {target.name} with damage {damage}");
     }
-
 }

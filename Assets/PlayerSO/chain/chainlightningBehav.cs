@@ -62,6 +62,7 @@ public class chainlightningBehav : MonoBehaviour
         if (target != null && !hitEnemies.Contains(collision.gameObject))
         {
             target.TakeDamage(damage);
+            target.ApplySlow(0.4f, 2f); // 40% slow for 2 seconds
             hitEnemies.Add(collision.gameObject);
 
             if (bouncesRemaining > 0)

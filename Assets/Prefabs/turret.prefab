@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2799403387375515313}
   - component: {fileID: 5351642004746483529}
   - component: {fileID: 6101118882653244409}
+  - component: {fileID: 1195510100366850492}
   m_Layer: 0
   m_Name: turret
   m_TagString: Untagged
@@ -107,3 +108,25 @@ MonoBehaviour:
   projectileSpeed: 10
   detectionRadius: 10
   projectilePrefab: {fileID: 4038443493545966985, guid: d4c5ed810035d164e8025cf609403c08, type: 3}
+--- !u!95 &1195510100366850492
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8753894595848831632}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1f1efb9f02453b449a0d7fa5879ecd8c, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

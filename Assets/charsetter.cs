@@ -37,6 +37,8 @@ public class charsetter : MonoBehaviour
         }
         Instance = this;
 
+        /*
+
         // Save original positions
         foreach (var ui in abilityUI)
         {
@@ -45,6 +47,8 @@ public class charsetter : MonoBehaviour
             if (ui.fillImage != null)
                 ui.fillOriginalPos = ui.fillImage.rectTransform.localPosition;
         }
+
+        */
     }
 
     void Start()
@@ -103,8 +107,8 @@ public class charsetter : MonoBehaviour
         if (index >= 0 && index < abilityUI.Length)
         {
             // Stop any running shake coroutine for this UI
-            StopCoroutine(ShakeIcon(abilityUI[index]));
-            StartCoroutine(ShakeIcon(abilityUI[index]));
+           // StopCoroutine(ShakeIcon(abilityUI[index]));
+           // StartCoroutine(ShakeIcon(abilityUI[index]));
         }
     }
 
@@ -130,6 +134,8 @@ public class charsetter : MonoBehaviour
             abilityUI[i].fillImage.fillAmount = fill;
         }
     }
+
+    /*
 
     // --- Static shake coroutine ---
     private IEnumerator ShakeIcon(AbilityUI ui)
@@ -159,5 +165,6 @@ public class charsetter : MonoBehaviour
         if (ui.fillImage != null)
             ui.fillImage.rectTransform.anchoredPosition = fillPos;
     }
+    */
 
-}
+    }
