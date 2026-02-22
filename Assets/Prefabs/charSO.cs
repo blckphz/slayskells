@@ -6,4 +6,7 @@ public class charSO : ScriptableObject
 {
     public int hp;
     public Ability[] abilities;
+
+    public Sprite frontsprite;
+    public Sprite backsprite;
 }

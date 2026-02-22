@@ -7,6 +7,8 @@ public class chainlightningBehav : MonoBehaviour
     private int bouncesRemaining;
     private float radius;
     private float rotationOffset;
+    private bool istickdmg;
+    private float slowduration, sloweffectivenes;
 
     // We use this to prevent hitting the same enemy twice in one shot
     private List<GameObject> hitEnemies = new List<GameObject>();
@@ -23,7 +25,7 @@ public class chainlightningBehav : MonoBehaviour
         spriteTransform = GetComponentInChildren<SpriteRenderer>().transform;
     }
 
-    public void Setup(float dmg, int bounces, float rad, Vector2 velocity, float rotOffset)
+    public void Setup(float dmg, int bounces, float rad, Vector2 velocity, float rotOffset, float stunDuration, float stuneffect, bool isapplyingtickdmg)
     {
         // 1. Reset state (CRITICAL for pooling)
         hitEnemies.Clear();
@@ -31,6 +33,10 @@ public class chainlightningBehav : MonoBehaviour
         bouncesRemaining = bounces;
         radius = rad;
         rotationOffset = rotOffset;
+        slowduration = stunDuration;
+        sloweffectivenes = stuneffect;
+        istickdmg = isapplyingtickdmg;
+
 
         // 2. Physics setup
         rb.linearVelocity = velocity;
@@ -62,7 +68,7 @@ public class chainlightningBehav : MonoBehaviour
         if (target != null && !hitEnemies.Contains(collision.gameObject))
         {
             target.TakeDamage(damage);
-            target.ApplySlow(0.4f, 2f); // 40% slow for 2 seconds
+            target.ApplySlow(sloweffectivenes, slowduration); // 40% slow for 2 seconds
             hitEnemies.Add(collision.gameObject);
 
             if (bouncesRemaining > 0)

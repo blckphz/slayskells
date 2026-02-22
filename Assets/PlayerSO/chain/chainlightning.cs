@@ -8,7 +8,11 @@ public class ChainLightning : offensiveRanged
     public float bounceRadius = 5f;
 
     [Header("Stun Settings")]
-    public float stunDuration = 5f;
+    public float stunDuration;
+    public float stuneffect;
+
+    public bool isapplyingtickdmg;
+
     public float stundmg = 5f;
     public float stuntick = 5f;
 
@@ -34,7 +38,11 @@ public class ChainLightning : offensiveRanged
                 maxBounces,
                 bounceRadius,
                 dir * projectileSpeed,
-                rotationOffset
+                rotationOffset,
+                stunDuration,
+                stuneffect,
+                isapplyingtickdmg
+
             );
         }
     }

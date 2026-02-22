@@ -949,6 +949,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   player: {fileID: 2138588754}
   anchor: {fileID: 1775938874}
+  backSprite: {fileID: 0}
+  frontSprite: {fileID: 0}
   maxDistance: 3
   smoothSpeed: 10
 --- !u!1 &482381717

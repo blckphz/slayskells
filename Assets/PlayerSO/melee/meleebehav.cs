@@ -9,24 +9,26 @@ public class meleebehav : MonoBehaviour
     private Animator anim;
     private Vector3 prefabScale;
 
-    private Transform spriteTransform;
     private Coroutine deactivationRoutine;
 
     private void Awake()
     {
         anim = GetComponent<Animator>();
+        // Save the original scale from the prefab/start
         prefabScale = transform.localScale;
-
-        spriteTransform = GetComponentInChildren<SpriteRenderer>()?.transform;
     }
 
     public void Setup(float dmg, int swingIndex)
     {
         damage = dmg;
         hitEnemies.Clear();
-        StopAllCoroutines();
+
+        // Stop any previous deactivation routines if re-enabled quickly
+        if (deactivationRoutine != null) StopCoroutine(deactivationRoutine);
 
         // Flip every second swing for visual variety
+        // Note: Because we use worldPositionStays in the other script, 
+        // this localScale change only affects the visual "flip" of the sprite.
         bool isEven = (swingIndex % 2 == 0);
         transform.localScale = new Vector3(
             isEven ? -prefabScale.x : prefabScale.x,
@@ -38,18 +40,17 @@ public class meleebehav : MonoBehaviour
         {
             anim.SetInteger("SwingIndex", swingIndex);
             anim.SetTrigger("Attack");
-            StartCoroutine(DeactivateAfterAnimation());
+            deactivationRoutine = StartCoroutine(DeactivateAfterAnimation());
         }
         else
         {
-            // fallback if no animator
-            if (deactivationRoutine != null) StopCoroutine(deactivationRoutine);
             deactivationRoutine = StartCoroutine(DeactivateAfterTime(0.3f));
         }
     }
 
     private IEnumerator DeactivateAfterAnimation()
     {
+        // Wait for animator to transition to the new state
         yield return new WaitForEndOfFrame();
 
         if (anim != null)
@@ -72,17 +73,15 @@ public class meleebehav : MonoBehaviour
         IDamageable target = collision.GetComponent<IDamageable>();
         if (target != null && !hitEnemies.Contains(target))
         {
-            // Apply damage
             target.TakeDamage(damage);
             hitEnemies.Add(target);
-
-            // Camera shake per enemy hit
             CameraShaker.Shake(0.35f, 0.12f);
         }
     }
 
     void Deactivate()
     {
+        // Reset scale and parent before returning to pool
         transform.localScale = prefabScale;
         transform.SetParent(null);
         gameObject.SetActive(false);
