@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 3179983684309857748}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.036, y: -0.497, z: 0}
+  m_LocalPosition: {x: 0.001, y: -0.497, z: 0}
   m_LocalScale: {x: 0.6145889, y: 0.14673698, z: 1.1434213}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 7810479635399899880}
   - component: {fileID: 4139072708938281468}
   - component: {fileID: 4377039986045184820}
+  - component: {fileID: 2328390164450282138}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -123,7 +124,7 @@ Transform:
   m_GameObject: {fileID: 5074179420469325824}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8951, y: -1.25872, z: 0}
+  m_LocalPosition: {x: 0.09, y: -1.25872, z: 0}
   m_LocalScale: {x: 2.1512485, y: 2.1512485, z: 2.1512485}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -217,7 +218,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
-  m_SpriteSortPoint: 0
+  m_SpriteSortPoint: 1
 --- !u!114 &7437932651018339989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -244,6 +245,8 @@ MonoBehaviour:
   exhaustedColor: {r: 1, g: 0, b: 0, a: 1}
   shakeDuration: 0.3
   shakeMagnitude: 5
+  dashClonePrefab: {fileID: 2088560179939077842, guid: 2f4ec9401856ab043b502d2bcaa0efa8, type: 3}
+  cloneSpawnRate: 0.05
 --- !u!50 &7079955650351671835
 Rigidbody2D:
   serializedVersion: 5
@@ -319,17 +322,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.3146701, y: -3.779428}
+  m_Offset: {x: 0.004124403, y: -0.49525023}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0.47, y: 0.5}
     oldSize: {x: 0.969697, y: 0.969697}
     newSize: {x: 9.090909, y: 9.090909}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.1310945, y: 1.5320523}
+  m_Size: {x: 0.63596296, y: 0.17078951}
   m_EdgeRadius: 0
 --- !u!114 &4139072708938281468
 MonoBehaviour:
@@ -347,6 +350,7 @@ MonoBehaviour:
   currentHealth: 0
   healthRegenRate: 5
   healthRegenDelay: 5
+  healthSlider: {fileID: 0}
 --- !u!70 &4377039986045184820
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -384,3 +388,122 @@ CapsuleCollider2D:
   m_Offset: {x: -0.031723104, y: -0.020393461}
   m_Size: {x: 0.5381274, y: 1.0104839}
   m_Direction: 0
+--- !u!96 &2328390164450282138
+TrailRenderer:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5074179420469325824}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: -1
+  m_Time: 5
+  m_PreviewTimeScale: 1
+  m_Parameters:
+    serializedVersion: 3
+    widthMultiplier: 1
+    widthCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.25390625
+        inSlope: 33.36133
+        outSlope: 33.36133
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.12499434
+      - serializedVersion: 3
+        time: 0.029039428
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    colorGradient:
+      serializedVersion: 2
+      key0: {r: 0, g: 0, b: 0, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
+      key2: {r: 0, g: 0, b: 0, a: 0}
+      key3: {r: 0, g: 0, b: 0, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 0
+      ctime1: 65535
+      ctime2: 0
+      ctime3: 0
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 0
+      m_ColorSpace: 0
+      m_NumColorKeys: 2
+      m_NumAlphaKeys: 2
+    numCornerVertices: 0
+    numCapVertices: 0
+    alignment: 0
+    textureMode: 0
+    textureScale: {x: 1, y: 1}
+    shadowBias: 0.5
+    generateLightingData: 0
+  m_MinVertexDistance: 0.1
+  m_MaskInteraction: 0
+  m_Autodestruct: 0
+  m_Emitting: 1
+  m_ApplyActiveColorSpace: 1

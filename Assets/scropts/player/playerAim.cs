@@ -1,26 +1,47 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerAim : MonoBehaviour
 {
     [Header("References")]
-    public Transform player;        // Player transform
-    public Transform anchor;        // Aim anchor
-    public GameObject backSprite;   // Back sprite (shows when aiming up)
-    public GameObject frontSprite;  // Front sprite (optional, shows normally)
+    public Transform player;
+    public Transform anchor;
+    public SpriteRenderer spriteRenderer;
+    public charSO selectedChar;
 
     [Header("Settings")]
     public float maxDistance = 3f;
     public float smoothSpeed = 10f;
 
+    void Start()
+    {
+        ApplyCharacterSprites();
+
+        // Force initial facing direction (optional – ensures consistent start)
+        if (player != null)
+        {
+            Vector3 scale = player.localScale;
+            scale.x = Mathf.Abs(scale.x); // start facing right
+            player.localScale = scale;
+        }
+    }
+
     void Update()
     {
-        if (player == null || anchor == null)
+        if (player == null || anchor == null || spriteRenderer == null)
         {
-            Debug.LogWarning($"[PlayerAim] Missing references on {gameObject.name}. Player: {player}, Anchor: {anchor}");
+            Debug.LogWarning($"[PlayerAim] Missing references on {gameObject.name}");
             return;
         }
 
         AimAtMouse();
+    }
+
+    void ApplyCharacterSprites()
+    {
+        if (selectedChar == null || spriteRenderer == null) return;
+
+        // Default sprite when game starts (facing down)
+        spriteRenderer.sprite = selectedChar.frontsprite;
     }
 
     void AimAtMouse()
@@ -30,11 +51,13 @@ public class PlayerAim : MonoBehaviour
         // Convert mouse position to world space
         Vector3 mouseScreenPos = Input.mousePosition;
         mouseScreenPos.z = Mathf.Abs(Camera.main.transform.position.z);
+
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
         mousePos.z = 0f;
 
         // Direction and clamp
         Vector3 direction = mousePos - player.position;
+
         if (direction.magnitude > maxDistance)
             direction = direction.normalized * maxDistance;
 
@@ -44,29 +67,39 @@ public class PlayerAim : MonoBehaviour
         anchor.position = Vector3.Lerp(anchor.position, targetPos, smoothSpeed * Time.deltaTime);
 
         // ======================
-        // Show back sprite when aiming up
+        // Swap sprite based on aiming direction
         // ======================
-        if (backSprite != null)
+        if (selectedChar != null)
         {
-            backSprite.SetActive(direction.y > 0f);
-        }
-
-        // Optional: show front sprite when aiming down
-        if (frontSprite != null)
-        {
-            frontSprite.SetActive(direction.y <= 0f);
+            if (direction.y > 0f && selectedChar.backsprite != null)
+                spriteRenderer.sprite = selectedChar.backsprite;
+            else if (direction.y <= 0f && selectedChar.frontsprite != null)
+                spriteRenderer.sprite = selectedChar.frontsprite;
         }
 
         // ======================
-        // Optional: Flip horizontally based on mouse X
+        // Flip horizontally based on direction
         // ======================
-        float scaleX = Mathf.Sign(direction.x);
+
         Vector3 playerScale = player.localScale;
-        playerScale.x = Mathf.Abs(playerScale.x) * scaleX;
+
+        // Prevent zero sign bug
+        float xSign = direction.x >= 0 ? 1f : -1f;
+
+        if (direction.y > 0f)
+        {
+            // LOOKING UP → normal flip
+            playerScale.x = Mathf.Abs(playerScale.x) * xSign;
+        }
+        else
+        {
+            // LOOKING DOWN → inverted flip
+            playerScale.x = Mathf.Abs(playerScale.x) * -xSign;
+        }
+
         player.localScale = playerScale;
     }
 
-    // Draw aim range in editor
     private void OnDrawGizmosSelected()
     {
         if (player != null)

@@ -84,7 +84,6 @@ public class EnemyAI : MonoBehaviour
     // CALLED BY ANIMATION EVENT
     public void checkforplayerdmg()
     {
-        Debug.Log("EnemyAI: Animation Event 'checkforplayerdmg' successfully fired!");
 
         if (weaponTrigger == null)
         {

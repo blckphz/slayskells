@@ -13,7 +13,6 @@ public class PlayerMovement : MonoBehaviour
     [Header("Stamina Settings")]
     public float maxStamina = 1.5f;
     public float rechargeRate = 0.5f;
-    // New variable to control how fast stamina drains
     public float consumptionRate = 1.0f;
     public float emptyPenaltyTime = 1f;
 
@@ -28,12 +27,17 @@ public class PlayerMovement : MonoBehaviour
     public float shakeDuration = 0.3f;
     public float shakeMagnitude = 5f;
 
+    [Header("Dash Clone Settings")]
+    public GameObject dashClonePrefab;
+    public float cloneSpawnRate = 0.05f;
+
     private Vector2 fillOriginalPos;
     private Vector2 bgOriginalPos;
     private Vector2 moveInput;
     private bool isDashButtonHeld;
     private float currentStamina;
     private bool isExhausted;
+    private float cloneTimer;
 
     void Awake()
     {
@@ -73,6 +77,22 @@ public class PlayerMovement : MonoBehaviour
 
         float currentSpeed = canDash ? dashSpeed : moveSpeed;
         rb.MovePosition(rb.position + moveInput * currentSpeed * Time.fixedDeltaTime);
+
+        // Spawn dash clones while dashing
+        if (canDash)
+        {
+            cloneTimer -= Time.fixedDeltaTime;
+
+            if (cloneTimer <= 0f)
+            {
+                SpawnDashClone();
+                cloneTimer = cloneSpawnRate;
+            }
+        }
+        else
+        {
+            cloneTimer = 0f;
+        }
     }
 
     private void HandleStamina()
@@ -81,12 +101,12 @@ public class PlayerMovement : MonoBehaviour
 
         if (isDashButtonHeld && isMoving && !isExhausted)
         {
-            // Apply the consumption rate here
             currentStamina -= consumptionRate * Time.fixedDeltaTime;
 
             if (currentStamina <= 0)
             {
                 currentStamina = 0;
+
                 if (!isExhausted)
                 {
                     isExhausted = true;
@@ -98,20 +118,35 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             if (currentStamina < maxStamina)
-                currentStamina += Time.fixedDeltaTime * rechargeRate;
+                currentStamina += rechargeRate * Time.fixedDeltaTime;
 
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
 
-            if (isExhausted && currentStamina >= (maxStamina * 0.2f))
+            if (isExhausted && currentStamina >= maxStamina * 0.2f)
                 isExhausted = false;
         }
     }
 
-    private void ResetExhaustion() { /* Penalty logic */ }
+    private void ResetExhaustion()
+    {
+        // Optional penalty logic
+    }
+
+    private void SpawnDashClone()
+    {
+        if (dashClonePrefab == null) return;
+
+        Instantiate(
+            dashClonePrefab,
+            transform.position,
+            transform.rotation
+        );
+    }
 
     private IEnumerator ShakeStaminaUI()
     {
         float timer = 0f;
+
         while (timer < shakeDuration)
         {
             timer += Time.deltaTime;
@@ -119,13 +154,17 @@ public class PlayerMovement : MonoBehaviour
 
             if (fillImage != null)
                 fillImage.rectTransform.anchoredPosition = fillOriginalPos + offset;
+
             if (backgroundImage != null)
                 backgroundImage.rectTransform.anchoredPosition = bgOriginalPos + offset;
 
             yield return null;
         }
 
-        if (fillImage != null) fillImage.rectTransform.anchoredPosition = fillOriginalPos;
-        if (backgroundImage != null) backgroundImage.rectTransform.anchoredPosition = bgOriginalPos;
+        if (fillImage != null)
+            fillImage.rectTransform.anchoredPosition = fillOriginalPos;
+
+        if (backgroundImage != null)
+            backgroundImage.rectTransform.anchoredPosition = bgOriginalPos;
     }
 }
