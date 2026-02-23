@@ -14,40 +14,45 @@ public class enemyHealth : MonoBehaviour, IDamageable
     public Image healthBarFill;
     public GameObject damageTextPrefab;
 
-    [Header("Visual Effects")]
+    [Header("Shader Property Names")]
+    public string hitIntensityName = "_Intensity";
+    public string stunIntensityName = "_StunIntensity";
+
+    [Header("Effect Intensities")]
+    public float peakHitIntensity = 100f;
+    public float peakStunIntensity = 100f;
+    public float peakSlowIntensity = 100f; // Adjust based on your shader's look
+
+    [Header("Effect Durations")]
     public float flashDuration = 0.2f;
-    private Coroutine _flashCoroutine;
 
-    [Header("Slow Settings")]
-    public Color slowColor = Color.yellow;
-
-    private Color originalColor;
-    private Coroutine slowCoroutine;
-
+    // Internal Variables
     private AIPath ai;
     private float originalSpeed;
-
     private SpriteRenderer spriteRenderer;
+    private MaterialPropertyBlock propertyBlock;
+
+    private Coroutine _flashCoroutine;
+    private Coroutine _slowCoroutine;
+    private Coroutine _stunCoroutine;
+
+    void Awake()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        ai = GetComponent<AIPath>();
+        propertyBlock = new MaterialPropertyBlock();
+    }
 
     void Start()
     {
         maxHealth = health;
-
-        // Get SpriteRenderer
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
-            originalColor = spriteRenderer.color;
-
-        // Get A* AIPath
-        ai = GetComponent<AIPath>();
-        if (ai != null)
-            originalSpeed = ai.maxSpeed;
+        if (ai != null) originalSpeed = ai.maxSpeed;
 
         UpdateHealthUI();
     }
 
     // ======================
-    // DAMAGE
+    // DAMAGE & FLASH
     // ======================
     public void TakeDamage(float damage)
     {
@@ -57,102 +62,85 @@ public class enemyHealth : MonoBehaviour, IDamageable
         UpdateHealthUI();
         ShowDamageText(damage);
 
-        if (_flashCoroutine != null)
-            StopCoroutine(_flashCoroutine);
-
+        if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
         _flashCoroutine = StartCoroutine(FlashEffect());
 
-        if (health <= 0)
-            Die();
+        if (health <= 0) Die();
     }
 
+    private IEnumerator FlashEffect()
+    {
+        float elapsed = 0f;
+        while (elapsed < flashDuration)
+        {
+            elapsed += Time.deltaTime;
+            float currentIntensity = Mathf.Lerp(peakHitIntensity, 0f, elapsed / flashDuration);
+
+            UpdateShaderProperty(hitIntensityName, currentIntensity);
+            yield return null;
+        }
+        UpdateShaderProperty(hitIntensityName, 0f);
+    }
+
+
     // ======================
-    // APPLY SLOW
+    // SLOW LOGIC (Now using Material)
     // ======================
     public void ApplySlow(float slowPercent, float duration)
     {
-        if (ai == null) return;
-
-        if (slowCoroutine != null)
-            StopCoroutine(slowCoroutine);
-
-        slowCoroutine = StartCoroutine(SlowRoutine(slowPercent, duration));
+        if (_slowCoroutine != null) StopCoroutine(_slowCoroutine);
+        _slowCoroutine = StartCoroutine(SlowRoutine(slowPercent, duration));
     }
 
-    IEnumerator SlowRoutine(float slowPercent, float duration)
+    private IEnumerator SlowRoutine(float slowPercent, float duration)
     {
-        // Apply speed reduction
-        ai.maxSpeed = originalSpeed * (1f - slowPercent);
 
-        // Apply yellow tint
-        if (spriteRenderer != null)
-            spriteRenderer.color = slowColor;
+        Debug.Log(slowPercent);
+
+        // Apply logic
+        if (ai != null) ai.maxSpeed = originalSpeed - slowPercent;
+        Debug.Log(ai.maxSpeed);
+        // Apply shader visual
+        UpdateShaderProperty(stunIntensityName, peakSlowIntensity);
 
         yield return new WaitForSeconds(duration);
 
-        // Restore speed
-        ai.maxSpeed = originalSpeed;
+        // Reset logic
+        if (ai != null) ai.maxSpeed = originalSpeed;
 
-        // Restore original color
-        if (spriteRenderer != null)
-            spriteRenderer.color = originalColor;
+        // Reset shader visual
+        UpdateShaderProperty(stunIntensityName, 0f);
+
+        _slowCoroutine = null;
     }
 
     // ======================
-    // FLASH EFFECT (simple white flash)
+    // HELPER METHODS
     // ======================
-    IEnumerator FlashEffect()
+    private void UpdateShaderProperty(string name, float value)
     {
-        if (spriteRenderer == null)
-            yield break;
+        if (spriteRenderer == null) return;
 
-        Color flashColor = Color.white;
-        spriteRenderer.color = flashColor;
-
-        yield return new WaitForSeconds(flashDuration);
-
-        // If still slowed, keep slow color
-        if (slowCoroutine != null)
-            spriteRenderer.color = slowColor;
-        else
-            spriteRenderer.color = originalColor;
+        // Get the current block to preserve other active effects (like Stun + Hit at once)
+        spriteRenderer.GetPropertyBlock(propertyBlock);
+        propertyBlock.SetFloat(name, value);
+        spriteRenderer.SetPropertyBlock(propertyBlock);
     }
 
-    // ======================
-    // HEALTH UI
-    // ======================
     void UpdateHealthUI()
     {
-        if (healthBarFill != null)
-            healthBarFill.fillAmount = health / maxHealth;
-
-        if (healthBarObject != null)
-            healthBarObject.SetActive(health < maxHealth);
+        if (healthBarFill != null) healthBarFill.fillAmount = health / maxHealth;
+        if (healthBarObject != null) healthBarObject.SetActive(health < maxHealth);
     }
 
-    // ======================
-    // DAMAGE TEXT
-    // ======================
     void ShowDamageText(float damage)
     {
         if (damageTextPrefab != null)
         {
-            GameObject textObj = Instantiate(
-                damageTextPrefab,
-                transform.position + Vector3.up,
-                Quaternion.identity
-            );
-
-            if (textObj.TryGetComponent<DamageNumber>(out DamageNumber dn))
-                dn.Setup(damage);
+            GameObject textObj = Instantiate(damageTextPrefab, transform.position + Vector3.up, Quaternion.identity);
+            if (textObj.TryGetComponent<DamageNumber>(out DamageNumber dn)) dn.Setup(damage);
         }
     }
 
-    // ======================
-    // DEATH
-    // ======================
-    void Die()
-    {
-        Destroy(gameObject);
-    }
+    void Die() => Destroy(gameObject);
 }

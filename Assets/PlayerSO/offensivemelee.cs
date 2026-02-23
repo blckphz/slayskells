@@ -61,7 +61,6 @@ public class offensivemelee : offensiveability
         // 6. FIX: Convert world position to local space to counter character flipping
         woosh.transform.localPosition = caster.InverseTransformPoint(desiredWorldPos);
 
-        Debug.Log($"[Melee] Swing {index} | Dir: {snappedDir} | Parent Scale: {caster.localScale.x} | Final LocalPos: {woosh.transform.localPosition}");
 
         var behav = woosh.GetComponent<meleebehav>();
         if (behav != null)

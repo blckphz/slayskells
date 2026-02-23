@@ -21,14 +21,12 @@ public class grenadeSO : offensiveRanged
         if (rb != null)
         {
             rb.AddForce(throwDir * throwForce, ForceMode2D.Impulse);
-            Debug.Log($"[GrenadeSO] Thrown with force {throwForce}");
         }
 
         // Initialize grenade logic
         if (grenade.TryGetComponent(out grenadeBehav logic))
         {
             logic.Initialize(damage, explosionRadius, logic.fuseTime);
-            Debug.Log("[GrenadeSO] Grenade logic initialized");
         }
     }
 }

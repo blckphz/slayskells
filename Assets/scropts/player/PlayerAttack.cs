@@ -57,7 +57,6 @@ public class PlayerAttack : MonoBehaviour
 
     private void TryUseAbility(int index)
     {
-        Debug.Log($"Trying to use ability index {index}");
 
         if (currentChar == null || currentChar.abilities == null)
             return;
@@ -69,7 +68,6 @@ public class PlayerAttack : MonoBehaviour
 
         if (ability != null && CanUseAbility(ability))
         {
-            Debug.Log($"Using ability: {ability.name}");
             PerformAttack(ability);
         }
     }
@@ -98,10 +96,8 @@ public class PlayerAttack : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[PlayerAttack] Executing {ability.name} at Position: {activeAnchor.position}");
 
         // 1. Audio
-        if (ability.launchsound != null && audiomanager.Instance != null)
         {
             audiomanager.Instance.PlaySound(ability.launchsound);
         }
